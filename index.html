@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lente da Tarde - Casa OS</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg-pergaminho: #0d0a07;
+      --card-bg: rgba(23, 16, 11, 0.92);
+      --borda-dourada: #c5a059;
+      --borda-glow: rgba(197, 160, 89, 0.35);
+      --sol-tarde: #e76f51;
+      --texto-primario: #e8d8c8;
+      --texto-dourado: #f0c987;
+      --fonte-titulo: 'Cinzel Decorative', serif;
+      --fonte-sub: 'Cinzel', serif;
+      --fonte-corpo: 'Quicksand', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-pergaminho);
+      color: var(--texto-primario);
+      font-family: var(--fonte-corpo);
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-bg);
+      border: 2px solid var(--borda-dourada);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 0 15px var(--borda-glow);
+      backdrop-filter: blur(8px);
+    }
+
+    h2 {
+      font-family: var(--fonte-titulo);
+      color: var(--sol-tarde);
+      font-size: 1.15rem;
+      text-align: center;
+      margin-top: 0;
+      border-bottom: 1px solid var(--borda-dourada);
+      padding-bottom: 8px;
+    }
+
+    .bloco {
+      background: rgba(0,0,0,0.3);
+      border-left: 3px solid var(--sol-tarde);
+      padding: 10px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 12px;
+    }
+
+    .label {
+      font-family: var(--fonte-sub);
+      font-size: 0.78rem;
+      color: var(--texto-dourado);
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--borda-dourada);
+      color: var(--texto-primario);
+      border-radius: 4px;
+      padding: 8px;
+      font-family: var(--fonte-corpo);
+      font-size: 0.82rem;
+      box-sizing: border-box;
+    }
+
+    .btn-grid {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .btn-st {
+      flex: 1;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--borda-dourada);
+      color: var(--texto-primario);
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: var(--fonte-sub);
+    }
+
+    .btn-st.active {
+      background: var(--sol-tarde);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .btn-salvar {
+      width: 100%;
+      background: linear-gradient(135deg, #c5a059, #e76f51);
+      border: none;
+      color: #0d0a07;
+      font-family: var(--fonte-sub);
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>☀️ Lente da Tarde — Sol do Meio-Dia</h2>
+
+    <div class="bloco">
+      <div class="label">⚖️ Reajuste de Rota do Ritmo</div>
+      <div class="btn-grid">
+        <button class="btn-st active" onclick="setAjuste('Manter Ritmo 🌿', this)">🌿 Manter</button>
+        <button class="btn-st" onclick="setAjuste('Desacelerar 🛑', this)">🛑 Desacelerar</button>
+        <button class="btn-st" onclick="setAjuste('Simplificar ✂️', this)">✂️ Simplificar</button>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <div class="label">⚡ Bloco de Tração da Tarde</div>
+      <input type="text" id="foco-tarde" placeholder="Demanda única ou essencial da tarde..." />
+    </div>
+
+    <button class="btn-salvar" onclick="salvar()">🌱 Sincronizar Bloco da Tarde</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD19AiSaJosyhNL8iz4J-D1mHgbu-MOKm4",
+      authDomain: "planejamentos-83b23.firebaseapp.com",
+      projectId: "planejamentos-83b23",
+      storageBucket: "planejamentos-83b23.firebasestorage.app",
+      messagingSenderId: "651538842400",
+      appId: "1:651538842400:web:5d0b45e7df8f2ac1f0cd45",
+      measurementId: "G-GK5XJ7FZN1"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const docId = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    let ajuste = "Manter Ritmo 🌿";
+
+    db.collection("ciclo_diario").doc(docId).onSnapshot(doc => {
+      if(doc.exists && doc.data().focoTarde) {
+        document.getElementById('foco-tarde').value = doc.data().focoTarde;
+      }
+    });
+
+    function setAjuste(v, el) {
+      ajuste = v;
+      document.querySelectorAll('.btn-st').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    async function salvar() {
+      await db.collection("ciclo_diario").doc(docId).set({
+        data: new Date().toLocaleDateString('pt-BR'),
+        ajusteTarde: ajuste,
+        focoTarde: document.getElementById('foco-tarde').value,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      alert("✨ Bloco da Tarde Sincronizado!");
+    }
+  </script>
+</body>
+</html>
