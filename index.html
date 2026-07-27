@@ -21,6 +21,7 @@
       --sol-tarde: #e76f51;
       --texto-primario: #e8d8c8;
       --texto-dourado: #f0c987;
+      --verde-elfico: #81b29a;
       --fonte-titulo: 'Cinzel Decorative', serif;
       --fonte-sub: 'Cinzel', serif;
       --fonte-corpo: 'Quicksand', sans-serif;
@@ -55,6 +56,15 @@
       margin-top: 0;
       border-bottom: 1px solid var(--borda-dourada);
       padding-bottom: 8px;
+    }
+
+    .radar-box {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(197, 160, 89, 0.3);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 14px;
+      font-size: 0.82rem;
     }
 
     .bloco {
@@ -109,6 +119,27 @@
       font-weight: bold;
     }
 
+    .lista-tarefas {
+      margin-top: 8px;
+      font-size: 0.82rem;
+    }
+
+    .item-tf {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,0,0,0.4);
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      border: 1px solid rgba(197, 160, 89, 0.2);
+    }
+
+    .item-tf.concluida {
+      opacity: 0.5;
+      text-decoration: line-through;
+    }
+
     .btn-salvar {
       width: 100%;
       background: linear-gradient(135deg, #c5a059, #e76f51);
@@ -128,18 +159,32 @@
   <div class="card">
     <h2>☀️ Lente da Tarde — Sol do Meio-Dia</h2>
 
+    <!-- Leitura do Radar Corporal da Tarde -->
+    <div class="radar-box">
+      <div style="font-family: var(--fonte-sub); color: var(--texto-dourado); font-size: 0.75rem; font-weight: bold; margin-bottom: 4px;">
+        🌿 Radar Corporal (Último Registro)
+      </div>
+      <div id="radar-info">Carregando dados do corpo...</div>
+    </div>
+
     <div class="bloco">
       <div class="label">⚖️ Reajuste de Rota do Ritmo</div>
       <div class="btn-grid">
-        <button class="btn-st active" onclick="setAjuste('Manter Ritmo 🌿', this)">🌿 Manter</button>
-        <button class="btn-st" onclick="setAjuste('Desacelerar 🛑', this)">🛑 Desacelerar</button>
-        <button class="btn-st" onclick="setAjuste('Simplificar ✂️', this)">✂️ Simplificar</button>
+        <button class="btn-st active" id="btn-manter" onclick="setAjuste('Manter Ritmo 🌿')">🌿 Manter</button>
+        <button class="btn-st" id="btn-desacelerar" onclick="setAjuste('Desacelerar 🛑')">🛑 Desacelerar</button>
+        <button class="btn-st" id="btn-simplificar" onclick="setAjuste('Simplificar ✂️')">✂️ Simplificar</button>
       </div>
     </div>
 
     <div class="bloco">
       <div class="label">⚡ Bloco de Tração da Tarde</div>
       <input type="text" id="foco-tarde" placeholder="Demanda única ou essencial da tarde..." />
+    </div>
+
+    <!-- Tarefas vindas do Planejamento Diário -->
+    <div class="bloco">
+      <div class="label">📋 Tarefas Alocadas para a Tarde</div>
+      <div id="lista-tarefas-tarde" class="lista-tarefas">Carregando tarefas...</div>
     </div>
 
     <button class="btn-salvar" onclick="salvar()">🌱 Sincronizar Bloco da Tarde</button>
@@ -160,17 +205,74 @@
     const db = firebase.firestore();
     const docId = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
     let ajuste = "Manter Ritmo 🌿";
+    let todasTarefas = [];
 
+    // Escuta em Tempo Real do Ciclo Diário
     db.collection("ciclo_diario").doc(docId).onSnapshot(doc => {
-      if(doc.exists && doc.data().focoTarde) {
-        document.getElementById('foco-tarde').value = doc.data().focoTarde;
+      if(doc.exists) {
+        const d = doc.data();
+        if(d.focoTarde !== undefined) document.getElementById('foco-tarde').value = d.focoTarde;
+        if(d.ajusteTarde) setAjusteVisual(d.ajusteTarde);
+        if(d.tarefas) {
+          todasTarefas = d.tarefas;
+          renderizarTarefasTarde();
+        }
       }
     });
 
-    function setAjuste(v, el) {
+    // Escuta em Tempo Real do Check-in Corporal
+    db.collection("jardim_florescimento").doc("radar_funcionamento").onSnapshot(doc => {
+      const container = document.getElementById('radar-info');
+      if (doc.exists && doc.data().registros && doc.data().registros.length > 0) {
+        const reg = doc.data().registros;
+        const u = reg[reg.length - 1];
+        container.innerHTML = `
+          <div>Bateria: <strong style="color:var(--verde-elfico);">${u.bateria || '🟢 Regulado'}</strong> (${u.hora || ''})</div>
+          <div>Tensão: ${u.corpo || 'Sem tensão'}</div>
+          <div style="color:var(--sol-tarde); margin-top:2px;">Orientação: <strong>${u.acao || 'Nenhuma'}</strong></div>
+        `;
+      } else {
+        container.innerText = "Nenhum check-in corporal registrado hoje.";
+      }
+    });
+
+    function setAjuste(v) {
+      ajuste = v;
+      setAjusteVisual(v);
+    }
+
+    function setAjusteVisual(v) {
       ajuste = v;
       document.querySelectorAll('.btn-st').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
+      if(v.includes('Desacelerar')) document.getElementById('btn-desacelerar').classList.add('active');
+      else if(v.includes('Simplificar')) document.getElementById('btn-simplificar').classList.add('active');
+      else document.getElementById('btn-manter').classList.add('active');
+    }
+
+    function renderizarTarefasTarde() {
+      const container = document.getElementById('lista-tarefas-tarde');
+      const daTarde = todasTarefas.filter(t => t.periodo === 'tarde');
+
+      if(daTarde.length === 0) {
+        container.innerHTML = '<p style="font-size:0.75rem; color:#aaa; margin:0;">Nenhuma tarefa específica para a tarde.</p>';
+        return;
+      }
+
+      let html = '';
+      daTarde.forEach(t => {
+        html += `
+          <div class="item-tf ${t.concluida ? 'concluida' : ''}">
+            <input type="checkbox" ${t.concluida ? 'checked' : ''} onclick="alternarConcluida(${t.id})" />
+            <span>${t.texto}</span>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    async function alternarConcluida(id) {
+      todasTarefas = todasTarefas.map(t => t.id === id ? { ...t, concluida: !t.concluida } : t);
+      await db.collection("ciclo_diario").doc(docId).set({ tarefas: todasTarefas }, { merge: true });
     }
 
     async function salvar() {
