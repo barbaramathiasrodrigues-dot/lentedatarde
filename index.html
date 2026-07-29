@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -22,6 +23,7 @@
       --texto-primario: #e8d8c8;
       --texto-dourado: #f0c987;
       --verde-elfico: #81b29a;
+      --azul-infra: #a8dadc;
       --fonte-titulo: 'Cinzel Decorative', serif;
       --fonte-sub: 'Cinzel', serif;
       --fonte-corpo: 'Quicksand', sans-serif;
@@ -39,23 +41,36 @@
 
     .card {
       width: 100%;
-      max-width: 500px;
+      max-width: 800px;
       background: var(--card-bg);
       border: 2px solid var(--borda-dourada);
       border-radius: 12px;
-      padding: 18px;
+      padding: 20px;
       box-shadow: 0 0 15px var(--borda-glow);
       backdrop-filter: blur(8px);
+      box-sizing: border-box;
     }
 
     h2 {
       font-family: var(--fonte-titulo);
       color: var(--sol-tarde);
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       text-align: center;
       margin-top: 0;
       border-bottom: 1px solid var(--borda-dourada);
       padding-bottom: 8px;
+    }
+
+    .topo-info {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(197, 160, 89, 0.3);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
     }
 
     .radar-box {
@@ -70,20 +85,23 @@
     .bloco {
       background: rgba(0,0,0,0.3);
       border-left: 3px solid var(--sol-tarde);
-      padding: 10px;
+      padding: 12px;
       border-radius: 0 6px 6px 0;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .label {
       font-family: var(--fonte-sub);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       color: var(--texto-dourado);
       margin-bottom: 6px;
       font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    input[type="text"] {
+    input[type="text"], textarea {
       width: 100%;
       background: rgba(0,0,0,0.5);
       border: 1px solid var(--borda-dourada);
@@ -98,7 +116,7 @@
     .btn-grid {
       display: flex;
       gap: 6px;
-      margin-bottom: 8px;
+      margin-top: 6px;
     }
 
     .btn-st {
@@ -106,17 +124,19 @@
       background: rgba(0,0,0,0.4);
       border: 1px solid var(--borda-dourada);
       color: var(--texto-primario);
-      padding: 6px;
+      padding: 8px;
       border-radius: 4px;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       cursor: pointer;
       font-family: var(--fonte-sub);
+      transition: all 0.2s;
     }
 
     .btn-st.active {
       background: var(--sol-tarde);
       color: #fff;
       font-weight: bold;
+      border-color: #f0c987;
     }
 
     .lista-tarefas {
@@ -124,20 +144,16 @@
       font-size: 0.82rem;
     }
 
-    .item-tf {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(0,0,0,0.4);
-      padding: 6px 8px;
-      border-radius: 4px;
-      margin-bottom: 4px;
-      border: 1px solid rgba(197, 160, 89, 0.2);
-    }
-
-    .item-tf.concluida {
-      opacity: 0.5;
-      text-decoration: line-through;
+    .postit-card-hoje {
+      background: rgba(23, 16, 11, 0.9);
+      border-left: 4px solid var(--sol-tarde);
+      border-top: 1px solid rgba(197, 160, 89, 0.2);
+      border-right: 1px solid rgba(197, 160, 89, 0.2);
+      border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      margin-bottom: 6px;
     }
 
     .btn-salvar {
@@ -147,10 +163,11 @@
       color: #0d0a07;
       font-family: var(--fonte-sub);
       font-weight: bold;
-      padding: 10px;
+      padding: 11px;
       border-radius: 6px;
       cursor: pointer;
-      margin-top: 8px;
+      margin-top: 10px;
+      font-size: 0.85rem;
     }
   </style>
 </head>
@@ -159,14 +176,20 @@
   <div class="card">
     <h2>☀️ Lente da Tarde — Sol do Meio-Dia</h2>
 
+    <div class="topo-info">
+      <div><i class="fa-solid fa-sun-plant-wilt"></i> <strong>Sintonização da Tarde</strong></div>
+      <div style="color: var(--sol-tarde);" id="hora-rio">--:--:--</div>
+    </div>
+
     <!-- Leitura do Radar Corporal da Tarde -->
     <div class="radar-box">
-      <div style="font-family: var(--fonte-sub); color: var(--texto-dourado); font-size: 0.75rem; font-weight: bold; margin-bottom: 4px;">
-        🌿 Radar Corporal (Último Registro)
+      <div style="font-family: var(--fonte-sub); color: var(--texto-dourado); font-size: 0.78rem; font-weight: bold; margin-bottom: 4px;">
+        🌿 Radar Corporal (Último Registro do Ciclo)
       </div>
       <div id="radar-info">Carregando dados do corpo...</div>
     </div>
 
+    <!-- REAJUSTE DE ROTA -->
     <div class="bloco">
       <div class="label">⚖️ Reajuste de Rota do Ritmo</div>
       <div class="btn-grid">
@@ -176,14 +199,15 @@
       </div>
     </div>
 
+    <!-- BLOCO DE TRAÇÃO -->
     <div class="bloco">
       <div class="label">⚡ Bloco de Tração da Tarde</div>
-      <input type="text" id="foco-tarde" placeholder="Demanda única ou essencial da tarde..." />
+      <textarea id="foco-tarde" rows="2" placeholder="Demanda única ou essencial da tarde..."></textarea>
     </div>
 
-    <!-- Tarefas vindas do Planejamento Diário -->
-    <div class="bloco">
-      <div class="label">📋 Tarefas Alocadas para a Tarde</div>
+    <!-- TAREFAS ALOCADAS PARA A TARDE -->
+    <div class="bloco" style="border-left-color: var(--azul-infra);">
+      <div class="label" style="color: var(--azul-infra);">📋 Tarefas Alocadas para a Tarde (Cards do Calendário)</div>
       <div id="lista-tarefas-tarde" class="lista-tarefas">Carregando tarefas...</div>
     </div>
 
@@ -203,24 +227,30 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const docId = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-    let ajuste = "Manter Ritmo 🌿";
-    let todasTarefas = [];
 
-    // Escuta em Tempo Real do Ciclo Diário
-    db.collection("ciclo_diario").doc(docId).onSnapshot(doc => {
+    const hojeDataObj = new Date();
+    const docIdHojeKey = `${hojeDataObj.getFullYear()}-${(hojeDataObj.getMonth()+1).toString().padStart(2,'0')}-${hojeDataObj.getDate().toString().padStart(2,'0')}`;
+    let ajuste = "Manter Ritmo 🌿";
+
+    function getHoraRioStr() {
+      return new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' (' + new Date().toLocaleDateString('pt-BR') + ')';
+    }
+
+    // 1. ESCUTA O CICLO DIÁRIO
+    db.collection("ciclo_diario").doc(docIdHojeKey).onSnapshot(doc => {
       if(doc.exists) {
         const d = doc.data();
         if(d.focoTarde !== undefined) document.getElementById('foco-tarde').value = d.focoTarde;
+        else if(d.faseVivencia !== undefined) document.getElementById('foco-tarde').value = d.faseVivencia;
+        
         if(d.ajusteTarde) setAjusteVisual(d.ajusteTarde);
-        if(d.tarefas) {
-          todasTarefas = d.tarefas;
-          renderizarTarefasTarde();
-        }
+        document.getElementById('hora-rio').innerText = d.atualizadoEmTexto || getHoraRioStr();
+      } else {
+        document.getElementById('hora-rio').innerText = getHoraRioStr();
       }
     });
 
-    // Escuta em Tempo Real do Check-in Corporal
+    // 2. ESCUTA O RADAR CORPORAL
     db.collection("jardim_florescimento").doc("radar_funcionamento").onSnapshot(doc => {
       const container = document.getElementById('radar-info');
       if (doc.exists && doc.data().registros && doc.data().registros.length > 0) {
@@ -236,6 +266,34 @@
       }
     });
 
+    // 3. ESCUTA OS CARDS ALOCADOS PARA A TARDE
+    db.collection("agenda_cards").onSnapshot(snapshot => {
+      const container = document.getElementById('lista-tarefas-tarde');
+      const cardsTarde = [];
+      snapshot.forEach(doc => {
+        const c = doc.data();
+        if (c.data === docIdHojeKey && (c.periodo === 'Tarde' || c.periodo === 'Dia Todo')) {
+          cardsTarde.push({ id: doc.id, ...c });
+        }
+      });
+
+      if(cardsTarde.length === 0) {
+        container.innerHTML = '<p style="font-size:0.75rem; color:#aaa; margin:0;">Nenhuma tarefa específica para a tarde.</p>';
+        return;
+      }
+
+      let html = '';
+      cardsTarde.forEach(c => {
+        html += `
+          <div class="postit-card-hoje">
+            <strong style="color:var(--sol-tarde);">☀️ ${c.titulo}</strong> <span style="font-size:0.65rem; color:var(--azul-infra);">(${c.periodo})</span>
+            ${c.agora ? `<br><span style="color:#aaa;">📍 ${c.agora}</span>` : ''}
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    });
+
     function setAjuste(v) {
       ajuste = v;
       setAjusteVisual(v);
@@ -249,39 +307,20 @@
       else document.getElementById('btn-manter').classList.add('active');
     }
 
-    function renderizarTarefasTarde() {
-      const container = document.getElementById('lista-tarefas-tarde');
-      const daTarde = todasTarefas.filter(t => t.periodo === 'tarde');
-
-      if(daTarde.length === 0) {
-        container.innerHTML = '<p style="font-size:0.75rem; color:#aaa; margin:0;">Nenhuma tarefa específica para a tarde.</p>';
-        return;
-      }
-
-      let html = '';
-      daTarde.forEach(t => {
-        html += `
-          <div class="item-tf ${t.concluida ? 'concluida' : ''}">
-            <input type="checkbox" ${t.concluida ? 'checked' : ''} onclick="alternarConcluida(${t.id})" />
-            <span>${t.texto}</span>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    }
-
-    async function alternarConcluida(id) {
-      todasTarefas = todasTarefas.map(t => t.id === id ? { ...t, concluida: !t.concluida } : t);
-      await db.collection("ciclo_diario").doc(docId).set({ tarefas: todasTarefas }, { merge: true });
-    }
-
     async function salvar() {
-      await db.collection("ciclo_diario").doc(docId).set({
-        data: new Date().toLocaleDateString('pt-BR'),
+      const horaStr = getHoraRioStr();
+      document.getElementById('hora-rio').innerText = horaStr;
+
+      const txtTarde = document.getElementById('foco-tarde').value.trim();
+
+      await db.collection("ciclo_diario").doc(docIdHojeKey).set({
         ajusteTarde: ajuste,
-        focoTarde: document.getElementById('foco-tarde').value,
+        focoTarde: txtTarde,
+        faseVivencia: txtTarde, // Sincroniza com a casca do dia
+        atualizadoEmTexto: horaStr,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
+
       alert("✨ Bloco da Tarde Sincronizado!");
     }
   </script>
