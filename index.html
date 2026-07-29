@@ -16,7 +16,7 @@
   <style>
     :root {
       --bg-pergaminho: #0d0a07;
-      --card-bg: rgba(23, 16, 11, 0.92);
+      --card-bg: rgba(23, 16, 11, 0.95);
       --borda-dourada: #c5a059;
       --borda-glow: rgba(197, 160, 89, 0.35);
       --sol-tarde: #e76f51;
@@ -24,6 +24,7 @@
       --texto-dourado: #f0c987;
       --verde-elfico: #81b29a;
       --azul-infra: #a8dadc;
+      --rosa-danca: #e07a5f;
       --fonte-titulo: 'Cinzel Decorative', serif;
       --fonte-sub: 'Cinzel', serif;
       --fonte-corpo: 'Quicksand', sans-serif;
@@ -49,6 +50,7 @@
       box-shadow: 0 0 15px var(--borda-glow);
       backdrop-filter: blur(8px);
       box-sizing: border-box;
+      position: relative;
     }
 
     h2 {
@@ -101,7 +103,7 @@
       align-items: center;
     }
 
-    input[type="text"], textarea {
+    input[type="text"], textarea, select {
       width: 100%;
       background: rgba(0,0,0,0.5);
       border: 1px solid var(--borda-dourada);
@@ -139,11 +141,7 @@
       border-color: #f0c987;
     }
 
-    .lista-tarefas {
-      margin-top: 8px;
-      font-size: 0.82rem;
-    }
-
+    /* CARD CLICÁVEL DA TARDE */
     .postit-card-hoje {
       background: rgba(23, 16, 11, 0.9);
       border-left: 4px solid var(--sol-tarde);
@@ -154,6 +152,17 @@
       border-radius: 6px;
       font-size: 0.78rem;
       margin-bottom: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .postit-card-hoje:hover {
+      background: rgba(197, 160, 89, 0.15);
+    }
+
+    .postit-card-hoje.concluido {
+      opacity: 0.5;
+      text-decoration: line-through;
     }
 
     .btn-salvar {
@@ -169,6 +178,126 @@
       margin-top: 10px;
       font-size: 0.85rem;
     }
+
+    /* MODAL DO CARD COMPLETO (CASCA DO CICLO TÁTICA) */
+    .modal-overlay {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(6px);
+      border-radius: 12px;
+      z-index: 100;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 15px 0;
+      overflow-y: auto;
+    }
+
+    .modal-box {
+      background: var(--card-bg);
+      border: 2px solid var(--borda-dourada);
+      border-radius: 8px;
+      padding: 18px;
+      width: 92%;
+      max-width: 520px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+    }
+
+    .modal-titulo {
+      font-family: var(--fonte-sub);
+      color: var(--texto-dourado);
+      font-size: 0.92rem;
+      font-weight: bold;
+      border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+      padding-bottom: 6px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.72rem;
+      color: var(--texto-dourado);
+      font-family: var(--fonte-sub);
+      font-weight: bold;
+    }
+
+    .grid-form-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .secao-card-bloco {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(197, 160, 89, 0.2);
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .subtitulo-card {
+      font-family: var(--fonte-sub);
+      font-size: 0.75rem;
+      color: var(--verde-elfico);
+      font-weight: bold;
+      border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+      padding-bottom: 3px;
+    }
+
+    .bar-acoes-copia {
+      display: flex;
+      gap: 6px;
+      background: rgba(197, 160, 89, 0.1);
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px dashed rgba(197, 160, 89, 0.3);
+      flex-wrap: wrap;
+    }
+
+    .modal-botoes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      border-top: 1px solid rgba(197, 160, 89, 0.2);
+      padding-top: 10px;
+    }
+
+    .btn-modal {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--borda-dourada);
+      color: var(--texto-primario);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: var(--fonte-sub);
+    }
+
+    .btn-modal-salvar {
+      background: linear-gradient(135deg, #c5a059, #81b29a);
+      color: #0d0a07;
+      font-weight: bold;
+      border: none;
+    }
+
+    .btn-modal-del {
+      background: transparent;
+      border: 1px solid #e07a5f;
+      color: #e07a5f;
+    }
   </style>
 </head>
 <body>
@@ -181,7 +310,7 @@
       <div style="color: var(--sol-tarde);" id="hora-rio">--:--:--</div>
     </div>
 
-    <!-- Leitura do Radar Corporal da Tarde -->
+    <!-- RADAR CORPORAL DA TARDE -->
     <div class="radar-box">
       <div style="font-family: var(--fonte-sub); color: var(--texto-dourado); font-size: 0.78rem; font-weight: bold; margin-bottom: 4px;">
         🌿 Radar Corporal (Último Registro do Ciclo)
@@ -205,13 +334,156 @@
       <textarea id="foco-tarde" rows="2" placeholder="Demanda única ou essencial da tarde..."></textarea>
     </div>
 
-    <!-- TAREFAS ALOCADAS PARA A TARDE -->
+    <!-- TAREFAS ALOCADAS PARA A TARDE (CLICÁVEIS) -->
     <div class="bloco" style="border-left-color: var(--azul-infra);">
-      <div class="label" style="color: var(--azul-infra);">📋 Tarefas Alocadas para a Tarde (Cards do Calendário)</div>
-      <div id="lista-tarefas-tarde" class="lista-tarefas">Carregando tarefas...</div>
+      <div class="label" style="color: var(--azul-infra);">
+        <span>📋 Tarefas Alocadas para a Tarde (Clique duplo para abrir)</span>
+      </div>
+      <div id="lista-tarefas-tarde">Carregando tarefas...</div>
     </div>
 
     <button class="btn-salvar" onclick="salvar()">🌱 Sincronizar Bloco da Tarde</button>
+
+    <!-- MODAL DO CARD COMPLETO (CASCA DO CICLO TÁTICA) -->
+    <div class="modal-overlay" id="modal-card">
+      <div class="modal-box">
+        <div class="modal-titulo" id="modal-card-titulo">🎴 CARD DO EVENTO / COMPROMISSO</div>
+
+        <div class="bar-acoes-copia" id="box-acoes-duplicar" style="display:none;">
+          <button class="btn-modal" onclick="duplicarCardMesmoDia()">📋 Duplicar Neste Dia</button>
+          <button class="btn-modal" onclick="copiarParaOutraData()">👯 Copiar p/ Outra Data</button>
+          <button class="btn-modal" onclick="adiarParaAmanha()">⏳ Adiar p/ Amanhã</button>
+        </div>
+
+        <div class="form-group">
+          <label>🎯 Título / Nome do Evento / Missão</label>
+          <input type="text" id="card-titulo-input" placeholder="Ex: Terapia, Consulta, Reunião..." />
+        </div>
+
+        <div class="grid-form-2">
+          <div class="form-group">
+            <label>📅 Data Específica</label>
+            <input type="date" id="card-data-input" />
+          </div>
+          <div class="form-group">
+            <label>Pilar / Categoria</label>
+            <select id="card-pilar-input">
+              <option value="pessoal">👤 Pessoal / Aniversários</option>
+              <option value="casa">🏠 Casa & Pets</option>
+              <option value="loja">🏪 Loja & Auto</option>
+              <option value="estudos">📚 Estudos & ENEM</option>
+              <option value="danca">💃 Dança / Saúde</option>
+              <option value="infra">🛠️ Manutenção / Infra</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-form-2">
+          <div class="form-group">
+            <label>Frequência / Recorrência</label>
+            <select id="card-freq-input">
+              <option value="Único">Único 📌</option>
+              <option value="Semanal">Semanal 🔄</option>
+              <option value="Quinzenal">Quinzenal 🔄</option>
+              <option value="Mensal">Mensal 📅</option>
+              <option value="Anual">Anual 🎂</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Período / Bloco</label>
+            <select id="card-periodo-input">
+              <option value="Dia Todo">Dia Todo ☀️</option>
+              <option value="Manhã">Manhã 🌅</option>
+              <option value="Tarde">Tarde ☀️</option>
+              <option value="Noite">Noite 🌙</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 🔄 CASCA DO CICLO DO CARD -->
+        <div class="secao-card-bloco">
+          <div class="subtitulo-card">🔄 CASCA DO CICLO (As 3 Fases)</div>
+          
+          <div class="form-group">
+            <label>🌅 1. Antes (Preparação & Alinhamento)</label>
+            <textarea id="card-fase-antes" rows="2" placeholder="Ações preparatórias..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>🌸 2. Vivência (Execução Regulada & Tração)</label>
+            <textarea id="card-fase-vivencia" rows="2" placeholder="Foco de execução..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>🌙 3. Integração (Recolhimento & Fechamento)</label>
+            <textarea id="card-fase-integracao" rows="2" placeholder="Descompressão..."></textarea>
+          </div>
+        </div>
+
+        <!-- 📜 HISTÓRICO & ESTADO -->
+        <div class="secao-card-bloco">
+          <div class="subtitulo-card">📜 Histórico & Estado</div>
+          
+          <div class="grid-form-2">
+            <div class="form-group">
+              <label>📜 Histórico</label>
+              <input type="text" id="card-historico" placeholder="Registros" />
+            </div>
+            <div class="form-group">
+              <label>📍 Agora</label>
+              <input type="text" id="card-agora" placeholder="Estado ativo" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 🛡️ PROTEÇÕES -->
+        <div class="secao-card-bloco">
+          <div class="subtitulo-card" style="color: var(--rosa-danca);">🛡️ Proteções & Balizas</div>
+          
+          <div class="grid-form-2">
+            <div class="form-group">
+              <label>Proteções de Hoje</label>
+              <input type="text" id="card-protecoes" placeholder="Limites" />
+            </div>
+            <div class="form-group">
+              <label>🚪 Próxima Transição</label>
+              <input type="text" id="card-transicao" placeholder="Transição" />
+            </div>
+          </div>
+
+          <div class="grid-form-2">
+            <div class="form-group">
+              <label>⏱️ Linha de Saída</label>
+              <input type="text" id="card-linha-saida" placeholder="Limite max" />
+            </div>
+            <div class="form-group">
+              <label>🚨 ALARME (Saída)</label>
+              <input type="text" id="card-alarme" placeholder="Alarme" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Demandas Essenciais</label>
+            <textarea id="card-demandas" rows="2" placeholder="Demandas essenciais..."></textarea>
+          </div>
+        </div>
+
+        <!-- 🎒 CHECKLIST -->
+        <div class="secao-card-bloco">
+          <div class="subtitulo-card" style="color: var(--azul-infra);">🎒 Checklist de Saída & Proteção Sensorial</div>
+          <textarea id="card-checklist" rows="3" placeholder="- [ ] Óculos/Fones..."></textarea>
+        </div>
+
+        <div class="modal-botoes">
+          <button class="btn-modal btn-modal-del" id="btn-excluir-card" onclick="excluirCardAtual()">🗑️ Excluir Card</button>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-modal" onclick="fecharModalCard()">Cancelar</button>
+            <button class="btn-modal btn-modal-salvar" onclick="salvarCardAtual()">💾 Salvar Card Completo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -231,6 +503,8 @@
     const hojeDataObj = new Date();
     const docIdHojeKey = `${hojeDataObj.getFullYear()}-${(hojeDataObj.getMonth()+1).toString().padStart(2,'0')}-${hojeDataObj.getDate().toString().padStart(2,'0')}`;
     let ajuste = "Manter Ritmo 🌿";
+    let cardsUniversais = [];
+    let cardEmEdicao = null;
 
     function getHoraRioStr() {
       return new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' (' + new Date().toLocaleDateString('pt-BR') + ')';
@@ -266,33 +540,147 @@
       }
     });
 
-    // 3. ESCUTA OS CARDS ALOCADOS PARA A TARDE
+    // 3. ESCUTA OS CARDS DA TARDE NO CALENDÁRIO UNIVERSAL
     db.collection("agenda_cards").onSnapshot(snapshot => {
-      const container = document.getElementById('lista-tarefas-tarde');
-      const cardsTarde = [];
+      cardsUniversais = [];
       snapshot.forEach(doc => {
-        const c = doc.data();
-        if (c.data === docIdHojeKey && (c.periodo === 'Tarde' || c.periodo === 'Dia Todo')) {
-          cardsTarde.push({ id: doc.id, ...c });
-        }
+        cardsUniversais.push({ id: doc.id, ...doc.data() });
       });
+      renderizarTarefasTarde();
+    });
+
+    function renderizarTarefasTarde() {
+      const container = document.getElementById('lista-tarefas-tarde');
+      const cardsTarde = cardsUniversais.filter(c => c.data === docIdHojeKey && (c.periodo === 'Tarde' || c.periodo === 'Dia Todo'));
 
       if(cardsTarde.length === 0) {
-        container.innerHTML = '<p style="font-size:0.75rem; color:#aaa; margin:0;">Nenhuma tarefa específica para a tarde.</p>';
+        container.innerHTML = '<p style="font-size:0.75rem; color:#aaa; margin:0;">Nenhuma tarefa/evento alocado para a tarde.</p>';
         return;
       }
 
       let html = '';
       cardsTarde.forEach(c => {
         html += `
-          <div class="postit-card-hoje">
-            <strong style="color:var(--sol-tarde);">☀️ ${c.titulo}</strong> <span style="font-size:0.65rem; color:var(--azul-infra);">(${c.periodo})</span>
-            ${c.agora ? `<br><span style="color:#aaa;">📍 ${c.agora}</span>` : ''}
+          <div class="postit-card-hoje ${c.concluido ? 'concluido' : ''}" ondblclick="abrirModalCard('${c.id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:var(--sol-tarde);">☀️ ${c.titulo}</strong>
+              <span style="font-size:0.65rem; color:var(--azul-infra);">${c.periodo || 'Tarde'}</span>
+            </div>
+            ${c.agora ? `<div style="font-size:0.7rem; color:var(--texto-dourado);">📍 ${c.agora}</div>` : ''}
+            <div style="font-size:0.62rem; color:#aaa; margin-top:3px;">(Clique duplo para abrir a Casca do Card)</div>
           </div>
         `;
       });
       container.innerHTML = html;
-    });
+    }
+
+    // MODAL DE CARDS
+    function abrirModalCard(cardId) {
+      const card = cardsUniversais.find(c => c.id === cardId);
+      if (!card) return;
+      cardEmEdicao = card;
+      document.getElementById('modal-card-titulo').innerText = '✏️ EDITAR CARD DO EVENTO';
+      document.getElementById('box-acoes-duplicar').style.display = 'flex';
+
+      document.getElementById('card-titulo-input').value = card.titulo || '';
+      document.getElementById('card-data-input').value = card.data || docIdHojeKey;
+      document.getElementById('card-pilar-input').value = card.pilar || 'pessoal';
+      document.getElementById('card-freq-input').value = card.frequencia || 'Único';
+      document.getElementById('card-periodo-input').value = card.periodo || 'Tarde';
+
+      document.getElementById('card-fase-antes').value = card.faseAntes || '';
+      document.getElementById('card-fase-vivencia').value = card.faseVivencia || '';
+      document.getElementById('card-fase-integracao').value = card.faseIntegracao || '';
+      document.getElementById('card-historico').value = card.historico || '';
+      document.getElementById('card-agora').value = card.agora || '';
+      document.getElementById('card-protecoes').value = card.protecoes || '';
+      document.getElementById('card-transicao').value = card.transicao || '';
+      document.getElementById('card-linha-saida').value = card.linhaSaida || '';
+      document.getElementById('card-alarme').value = card.alarme || '';
+      document.getElementById('card-demandas').value = card.demandas || '';
+      document.getElementById('card-checklist').value = card.checklist || '';
+
+      document.getElementById('btn-excluir-card').style.display = 'block';
+      document.getElementById('modal-card').style.display = 'flex';
+    }
+
+    function fecharModalCard() {
+      document.getElementById('modal-card').style.display = 'none';
+      cardEmEdicao = null;
+    }
+
+    function extrairObjetoFormulario() {
+      return {
+        titulo: document.getElementById('card-titulo-input').value.trim(),
+        data: document.getElementById('card-data-input').value,
+        pilar: document.getElementById('card-pilar-input').value,
+        frequencia: document.getElementById('card-freq-input').value,
+        periodo: document.getElementById('card-periodo-input').value,
+        faseAntes: document.getElementById('card-fase-antes').value.trim(),
+        faseVivencia: document.getElementById('card-fase-vivencia').value.trim(),
+        faseIntegracao: document.getElementById('card-fase-integracao').value.trim(),
+        historico: document.getElementById('card-historico').value.trim(),
+        agora: document.getElementById('card-agora').value.trim(),
+        protecoes: document.getElementById('card-protecoes').value.trim(),
+        transicao: document.getElementById('card-transicao').value.trim(),
+        linhaSaida: document.getElementById('card-linha-saida').value.trim(),
+        alarme: document.getElementById('card-alarme').value.trim(),
+        demandas: document.getElementById('card-demandas').value.trim(),
+        checklist: document.getElementById('card-checklist').value.trim(),
+        concluido: cardEmEdicao ? (cardEmEdicao.concluido || false) : false,
+        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      };
+    }
+
+    async function salvarCardAtual() {
+      const cardObj = extrairObjetoFormulario();
+      if (!cardObj.titulo || !cardObj.data) return alert("Título e Data são obrigatórios.");
+
+      if (cardEmEdicao) {
+        await db.collection("agenda_cards").doc(cardEmEdicao.id).set(cardObj, { merge: true });
+      }
+      fecharModalCard();
+    }
+
+    async function duplicarCardMesmoDia() {
+      const cardObj = extrairObjetoFormulario();
+      cardObj.titulo = `${cardObj.titulo} (Cópia)`;
+      delete cardObj.id;
+      await db.collection("agenda_cards").add(cardObj);
+      fecharModalCard();
+    }
+
+    async function copiarParaOutraData() {
+      const novaData = prompt("Digite a nova data para copiar o Card (YYYY-MM-DD):", document.getElementById('card-data-input').value);
+      if (!novaData) return;
+
+      const cardObj = extrairObjetoFormulario();
+      cardObj.data = novaData;
+      delete cardObj.id;
+
+      await db.collection("agenda_cards").add(cardObj);
+      fecharModalCard();
+    }
+
+    async function adiarParaAmanha() {
+      const dAmanha = new Date(hojeDataObj.getFullYear(), hojeDataObj.getMonth(), hojeDataObj.getDate() + 1);
+      const dataAmanhaKey = `${dAmanha.getFullYear()}-${(dAmanha.getMonth()+1).toString().padStart(2,'0')}-${dAmanha.getDate().toString().padStart(2,'0')}`;
+
+      const cardObj = extrairObjetoFormulario();
+      cardObj.data = dataAmanhaKey;
+
+      if (cardEmEdicao) {
+        await db.collection("agenda_cards").doc(cardEmEdicao.id).set(cardObj, { merge: true });
+      }
+      fecharModalCard();
+    }
+
+    async function excluirCardAtual() {
+      if (cardEmEdicao) {
+        await db.collection("agenda_cards").doc(cardEmEdicao.id).delete();
+        fecharModalCard();
+      }
+    }
 
     function setAjuste(v) {
       ajuste = v;
@@ -310,13 +698,12 @@
     async function salvar() {
       const horaStr = getHoraRioStr();
       document.getElementById('hora-rio').innerText = horaStr;
-
       const txtTarde = document.getElementById('foco-tarde').value.trim();
 
       await db.collection("ciclo_diario").doc(docIdHojeKey).set({
         ajusteTarde: ajuste,
         focoTarde: txtTarde,
-        faseVivencia: txtTarde, // Sincroniza com a casca do dia
+        faseVivencia: txtTarde,
         atualizadoEmTexto: horaStr,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
